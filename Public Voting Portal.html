@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة تصويت القنوات الناشئة</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- خط Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#0b0f19',
+              card: '#151c2c',
+              border: '#222f47',
+              red: '#ff3b30',
+              accent: '#38bdf8'
+            }
+          },
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #0b0f19;
+      color: #f8fafc;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- شريط التنقل العلوي -->
+  <header class="bg-brand-card border-b border-brand-border sticky top-0 z-50 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-red-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-lg shadow-red-500/30">
+          <i class="fa-solid fa-play"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg text-white tracking-wide">منصة تصويت صناع المحتوى 🚀</h1>
+          <p class="text-xs text-slate-400">دعّم قناتك المفضلة لتصل للأعلى</p>
+        </div>
+      </div>
+
+      <nav class="flex bg-brand-bg p-1 rounded-xl border border-brand-border">
+        <button id="btn-visitor" onclick="switchTab('visitor')" class="px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all bg-red-500 text-white shadow">
+          <i class="fa-solid fa-trophy ml-1.5"></i> التصويت العام
+        </button>
+        <button id="btn-apply" onclick="switchTab('apply')" class="px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all text-slate-300 hover:text-white">
+          <i class="fa-solid fa-plus-circle ml-1.5"></i> تقديم طلب قناة
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
+
+    <!-- 1. واجهة التصويت العام للجمهور -->
+    <section id="tab-visitor" class="tab-content active space-y-8">
+      
+      <!-- بنر ترحيبي -->
+      <div class="bg-gradient-to-r from-slate-900 to-brand-card border border-brand-border p-6 rounded-2xl text-center md:text-right flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h2 class="text-xl md:text-2xl font-extrabold text-white mb-1">صوت لصانع المحتوى المفضل لديك!</h2>
+          <p class="text-slate-400 text-xs md:text-sm">الأصوات شفافة وتساعد القنوات الناشئة على كسب الشهرة والداعمين.</p>
+        </div>
+        <button onclick="switchTab('apply')" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-red-500/20 transition-all whitespace-nowrap">
+          أضف قناتك للتصويت <i class="fa-solid fa-arrow-left mr-1"></i>
+        </button>
+      </div>
+
+      <!-- الفئات الديناميكية -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-filter text-sky-400"></i> الفئات:
+        </h3>
+        <div class="flex flex-wrap gap-2" id="categories-bar">
+          <!-- تتولد أزرار الفئات ديناميكياً من البيانات -->
+        </div>
+      </div>
+
+      <!-- شبكة عرض القنوات -->
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-fire text-amber-400"></i> القنوات المشاركة
+          </h3>
+          <span id="channels-count-label" class="text-xs bg-brand-card text-slate-400 px-3 py-1 rounded-full border border-brand-border">0 قناة</span>
+        </div>
+
+        <!-- قائمة القنوات المعروضة -->
+        <div id="approved-channels-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- تُعرض القنوات المقبولة هنا dynamic -->
+        </div>
+
+        <!-- حالة عدم وجود قنوات (Empty State) -->
+        <div id="empty-state" class="text-center py-16 bg-brand-card/40 border border-brand-border rounded-2xl">
+          <i class="fa-solid fa-inbox text-5xl text-slate-600 mb-4"></i>
+          <h4 class="text-base font-bold text-slate-300">لا توجد قنوات معروضة حالياً</h4>
+          <p class="text-slate-500 text-xs mt-1">الموقع فارغ بانتظار ربط البيانات وإضافة القنوات المقبولة من موقع الإدارة.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 2. واجهة تقديم طلب قناة جديدة -->
+    <section id="tab-apply" class="tab-content max-w-xl mx-auto space-y-6">
+      <div class="bg-brand-card border border-brand-border p-6 md:p-8 rounded-2xl shadow-2xl">
+        <div class="text-center mb-6">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-sky-500/10 text-sky-400 text-xl mb-2">
+            <i class="fa-solid fa-file-signature"></i>
+          </div>
+          <h2 class="text-xl font-bold text-white">تقديم طلب مشاركة قناة</h2>
+          <p class="text-slate-400 text-xs mt-1">أدخل بيانات قناتك وسيتم إرسال الطلب لمراجعته وقبوله من الإدارة.</p>
+        </div>
+
+        <form id="channel-form" onsubmit="handleChannelSubmit(event)" class="space-y-4 text-xs md:text-sm">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1.5">اسم القناة <span class="text-red-400">*</span></label>
+            <input type="text" id="input-name" required placeholder="مثال: عالم التقنية" 
+              class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 transition-colors">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1.5">الفئة <span class="text-red-400">*</span></label>
+            <select id="input-category" required class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sky-400 transition-colors">
+              <option value="">-- اختر الفئة المناسبة --</option>
+              <option value="ألعاب">🎮 ألعاب وجيمينج</option>
+              <option value="تقنية">💻 تقنية وبرمجة</option>
+              <option value="تعليم">📚 تعليم وشروحات</option>
+              <option value="فلوجات">🎥 فلوجات وتحديات</option>
+              <option value="تصميم">🎨 تصميم وفنون</option>
+              <option value="منوعات">🌟 محتوى متنوع</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1.5">رابط القناة على يوتيوب <span class="text-red-400">*</span></label>
+            <input type="url" id="input-link" required placeholder="https://www.youtube.com/@channel" 
+              class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 transition-colors">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1.5">وسيلة التواصل (واتساب / تلجرام / إيميل) <span class="text-red-400">*</span></label>
+            <input type="text" id="input-contact" required placeholder="@username أو رقم الهاتف" 
+              class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 transition-colors">
+          </div>
+
+          <button type="submit" class="w-full bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold py-3.5 rounded-xl shadow-lg shadow-sky-500/20 transition-all text-sm mt-2">
+            إرسال الطلب للمراجعة <i class="fa-solid fa-paper-plane mr-1"></i>
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- الفوتر -->
+  <footer class="bg-brand-card border-t border-brand-border py-4 text-center text-slate-500 text-xs">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>منصة تصويت القنوات الناشئة - الواجهة العامة للجمهور</p>
+    </div>
+  </footer>
+
+  <!-- إشعار Toast -->
+  <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-brand-card border border-brand-border text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <span id="toast-message" class="text-xs font-semibold">تمت العملية بنجاح!</span>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------------
+    // البيانات المبدئية (فارغة تماماً ومجهزة للربط بقاعدة البيانات)
+    // ------------------------------------------------------------------
+    let categoriesList = ['الكل'];
+    let selectedCategory = 'الكل';
+    let channelsData = []; // القنوات المقبولة تضاف هنا من الـ Database
+
+    // ------------------------------------------------------------------
+    // التنقل بين تبويب التصويت وتبويب الطلبات
+    // ------------------------------------------------------------------
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      
+      ['visitor', 'apply'].forEach(t => {
+        const btn = document.getElementById(`btn-${t}`);
+        if (btn) btn.className = "px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all text-slate-300 hover:text-white relative";
+      });
+
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      const activeBtn = document.getElementById(`btn-${tabName}`);
+      if (activeBtn) activeBtn.className = "px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all bg-red-500 text-white shadow relative";
+
+      if (tabName === 'visitor') {
+        checkUrlForHighlight();
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // تحديث وتوليد شريط الفئات ديناميكياً
+    // ------------------------------------------------------------------
+    function updateCategoriesFromData() {
+      const approvedChannels = channelsData.filter(c => c.status === 'approved');
+      const cats = new Set(['الكل']);
+      approvedChannels.forEach(c => {
+        if (c.category) cats.add(c.category);
+      });
+      categoriesList = Array.from(cats);
+    }
+
+    function renderCategoriesBar() {
+      updateCategoriesFromData();
+      const container = document.getElementById('categories-bar');
+      container.innerHTML = '';
+
+      categoriesList.forEach(cat => {
+        const isActive = cat === selectedCategory;
+        const btn = document.createElement('button');
+        btn.className = `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+          isActive 
+            ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20' 
+            : 'bg-brand-card text-slate-300 border-brand-border hover:bg-slate-800'
+        }`;
+        btn.innerText = cat;
+        btn.onclick = () => {
+          selectedCategory = cat;
+          renderCategoriesBar();
+          renderApprovedChannels();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // عرض القنوات المقبولة للجمهور
+    // ------------------------------------------------------------------
+    function renderApprovedChannels() {
+      const grid = document.getElementById('approved-channels-grid');
+      const emptyState = document.getElementById('empty-state');
+      
+      const approvedList = channelsData.filter(c => 
+        c.status === 'approved' && (selectedCategory === 'الكل' || c.category === selectedCategory)
+      );
+
+      approvedList.sort((a, b) => b.votes - a.votes);
+      document.getElementById('channels-count-label').innerText = `${approvedList.length} قناة`;
+
+      if (approvedList.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.innerHTML = '';
+
+      approvedList.forEach(chan => {
+        const card = document.createElement('div');
+        card.id = `channel-card-${chan.id}`;
+        card.className = "bg-brand-card border border-brand-border rounded-2xl p-5 flex flex-col justify-between hover:border-slate-600 transition-all shadow-lg relative";
+        
+        const shareUrl = `${window.location.origin}${window.location.pathname}?vote_id=${chan.id}`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <img src="${chan.image || 'https://via.placeholder.com/150/151c2c/ffffff?text=قناة'}" alt="${chan.name}" 
+                onerror="this.src='https://via.placeholder.com/150/151c2c/ffffff?text=قناة'" 
+                class="w-14 h-14 rounded-xl object-cover border border-brand-border bg-brand-bg">
+              <div class="overflow-hidden">
+                <span class="inline-block bg-sky-500/10 text-sky-400 text-xs px-2.5 py-0.5 rounded-md border border-sky-500/20 mb-1 font-semibold">${chan.category}</span>
+                <h4 class="font-bold text-white text-base truncate">${chan.name}</h4>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs mb-4">
+              <a href="${chan.link}" target="_blank" class="inline-flex items-center gap-1.5 text-slate-400 hover:text-red-400 transition-colors">
+                <i class="fa-brands fa-youtube text-red-500 text-sm"></i> زيارة القناة
+              </a>
+              <button onclick="copyShareLink('${shareUrl}')" class="text-sky-400 hover:text-sky-300 flex items-center gap-1 bg-sky-500/10 border border-sky-500/20 px-2 py-1 rounded-lg">
+                <i class="fa-solid fa-share-nodes"></i> رابط التصويت
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-brand-bg border border-brand-border rounded-xl p-3 flex justify-between items-center">
+            <div>
+              <span class="text-xs text-slate-400 block">عدد الأصوات</span>
+              <span class="text-lg font-extrabold text-white" id="vote-num-${chan.id}">${chan.votes}</span>
+            </div>
+            <button onclick="handleVote(${chan.id})" class="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow flex items-center gap-1.5 active:scale-95 transition-all">
+              <i class="fa-solid fa-thumbs-up"></i> تصويت
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // دالة التصويت
+    // ------------------------------------------------------------------
+    function handleVote(channelId) {
+      const channel = channelsData.find(c => c.id === channelId);
+      if (channel) {
+        channel.votes += 1;
+        const numElem = document.getElementById(`vote-num-${channelId}`);
+        if (numElem) numElem.innerText = channel.votes;
+        
+        showToast(`تم تسجيل صوتك بنجاح لقناة: ${channel.name}! 👍`);
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // نسخ رابط التصويت المباشر
+    // ------------------------------------------------------------------
+    function copyShareLink(url) {
+      const tempInput = document.createElement('input');
+      tempInput.value = url;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      showToast("تم نسخ رابط التصويت المباشر! 🔗");
+    }
+
+    // ------------------------------------------------------------------
+    // إرسال طلب قناة جديدة (يُرسل البيانات لقاعدة البيانات)
+    // ------------------------------------------------------------------
+    function handleChannelSubmit(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('input-name').value.trim();
+      const category = document.getElementById('input-category').value;
+      const link = document.getElementById('input-link').value.trim();
+      const contact = document.getElementById('input-contact').value.trim();
+
+      // هنا يتم ربط API الإرسال لقاعدة البيانات (Supabase / Firebase) مستقبلاً
+      console.log("تم إرسال الطلب:", { name, category, link, contact });
+
+      document.getElementById('channel-form').reset();
+      showToast("تم إرسال طلبك بنجاح! سيتم مراجعته وإضافته من قبل الإدارة.");
+    }
+
+    // ------------------------------------------------------------------
+    // التمييز التلقائي للقناة عند فتح رابط المشاركة المباشر
+    // ------------------------------------------------------------------
+    function checkUrlForHighlight() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const voteId = urlParams.get('vote_id');
+      if (voteId) {
+        setTimeout(() => {
+          const card = document.getElementById(`channel-card-${voteId}`);
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('ring-2', 'ring-red-500', 'shadow-2xl');
+          }
+        }, 300);
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // التنبيهات (Toast)
+    // ------------------------------------------------------------------
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    window.onload = function() {
+      renderCategoriesBar();
+      renderApprovedChannels();
+      checkUrlForHighlight();
+    };
+  </script>
+</body>
+</html>
